@@ -63,15 +63,29 @@ void print() {
     gotoxy();
 }
 
+void clear_screen() {
+    for (int i = 0; i < height*width; i++) {
+        screen[i] = 0;
+    }
+}
+
+void draw_figure(figure fig, float angle = 0) {
+    while (fig.u <= PI) {
+        fig.u += PI/180;
+        fig.r = 12 * cos(5*fig.u + angle);
+        point fig_decart = fig.to_decart();
+        screen[fig_decart.y * width + fig_decart.x] = 1;
+    }
+}
+
 int main() {
-    figure a1(4, 0);
+    figure fig1(4, 0);
+    int i = 0;
     while (true) {
-        a1.u += PI/180;
-        a1.r = 9 * cos(5*a1.u);
-        point a1_decart = a1.to_decart();
-        screen[a1_decart.y * width + a1_decart.x] = 1;
+        draw_figure(fig1, i*PI/10);
         print();
-        // screen[a1_decart.y * width + a1_decart.x] = 0;
+        clear_screen();
+        i++;
         Sleep(32);
     }
     delete[] screen;
