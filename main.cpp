@@ -10,6 +10,17 @@ const float PI = 3.14;
 int height = 50;
 int width = 30;
 
+struct cell {
+    bool active = true;
+    char symbol = '*';
+    cell() {
+        bool active = true;
+        char symbol = '*';
+    }
+};
+
+cell* screen = new cell[height*width];
+
 void gotoxy(int x = 0, int y = 0) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     
@@ -30,17 +41,32 @@ struct point {
     }
 };
 
-int* screen = new int[height*width] {0};
-
 struct figure {
     point center;
-    int r = 1;
+    int len = 12;
+    int r = len;
     float u = 0;
-    figure(int r = 1, float u = 0) {
+    char symbol = '*';
+    figure() {
+        center.x = width/2;
+        center.y = height/2 + 10;
+    }
+    figure(int x, int y, char symbol = '*') {
         this->r = r;
         this->u = u;
-        center.y = height/2 + 10;
-        center.x = width/2;
+        this->symbol = symbol;
+        center.y = y;
+        center.x = x;
+    }
+    void set_xy(int x, int y) {
+        center.x = x;
+        center.y = y;
+    }
+    void set_len(int r) {
+        this->len = len;
+    }
+    void set_symbol(char symbol) {
+        this->symbol = symbol;
     }
     point to_decart() {
         point a(center.x+r*cos(u), center.y+r*sin(u), 1);
@@ -52,9 +78,10 @@ void print() {
     string buffer;
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-            if (screen[i*width + j] == 1) buffer += "* ";
-            else buffer += "  ";
-            // buffer += to_string(screen[i*width + j]) + " ";    
+            if (screen[i*width + j].active) buffer += screen[i*width + j].symbol;
+            else buffer += " ";
+
+            buffer += " ";
         }
         buffer += "\n";
     }
@@ -65,27 +92,41 @@ void print() {
 
 void clear_screen() {
     for (int i = 0; i < height*width; i++) {
-        screen[i] = 0;
+        screen[i].active = false;
     }
 }
 
-void draw_figure(figure fig, float angle = 0) {
+void animate_figure(figure fig, float angle = 0, int k = 5) {
     while (fig.u <= PI) {
         fig.u += PI/180;
-        fig.r = 12 * cos(5*fig.u + angle);
+        fig.r = (fig.len * cos(k*fig.u + angle));
         point fig_decart = fig.to_decart();
-        screen[fig_decart.y * width + fig_decart.x] = 1;
+        if (fig_decart.y < height && fig_decart.y > 0 && fig_decart.x < width && fig_decart.x > 0) {
+            screen[fig_decart.y * width + fig_decart.x].active = true;
+            screen[fig_decart.y * width + fig_decart.x].symbol = fig.symbol;
+        }
     }
 }
 
 int main() {
-    figure fig1(4, 0);
-    int i = 0;
+    srand(time(0));
+    char syms[] = {'*', '#', '?', '@'};
+    const int n = 4;
+    figure figs[n];
+    for (int i = 0; i < n; i++) {
+        figs[i].set_xy(rand()%width, rand()%height);
+        figs[i].set_len(6 + rand()%4);
+        figs[i].set_symbol(syms[i]);
+    }
+    int step = 0;
     while (true) {
-        draw_figure(fig1, i*PI/10);
+        for (int i = 0; i < n; i++) {
+            animate_figure(figs[i], step*PI/10);
+        }
         print();
         clear_screen();
-        i++;
+        step++;
+        if (step == 20) step = 0;
         Sleep(32);
     }
     delete[] screen;
