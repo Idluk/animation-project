@@ -67,7 +67,7 @@ int main() {
     figure a1(4, 0);
     while (true) {
         a1.u += PI/180;
-        a1.r = 5 + 4*cos(a1.u);
+        a1.r = 9 * cos(5*a1.u);
         point a1_decart = a1.to_decart();
         screen[a1_decart.y * width + a1_decart.x] = 1;
         print();
